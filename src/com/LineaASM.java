@@ -6,7 +6,8 @@ public class LineaASM {
 	private String instruccion=null;
 	private String operando=null;
 	private String problema="";
-	
+	//private ResultadoTabop result=null;
+	private String result="";
 	
 	
 	public LineaASM(String etiqueta, String instruccion, String operando) {
@@ -49,15 +50,29 @@ public class LineaASM {
 	public void setProblema(String problema) {
 		if(problema.length()>0)
 			this.problema+=problema;
+		else
+			this.problema="";
+	}
+	public String getProblema() {
+		return this.problema;
 	}
 	
-	public String toString() {
-		if(problema.length()>0)
-			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+" "+" Problema: "+this.problema;
-		else
-			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando;
+	public String getResult() {
+		return result;
 	}
 
+	public void setResult(String result) {
+		this.result += result;
+	}
+
+	public String toString() {
+		if(problema.length()>0)
+			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+" "+" Problema: "+this.problema+"\n---";
+		else if(result.length()>0)
+			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+"\nTabop: "+result+"---";
+		else
+			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+"\n---";
+	}
 }
 
 class Comentario extends LineaASM{

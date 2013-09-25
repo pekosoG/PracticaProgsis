@@ -1,19 +1,6 @@
 ; comentario numero 1 =TALLER=
-    ORG			%00001111
- Et1  equ    $ffFF
-11dos   LDAA		 @4732
-		SWI   
-ghjfjh
-hgjhgfdf ghgh
-	g.h.hhh
-	
-		
-		
-		
-		
-			DS.b  %0011000011111100 ghgh
-			
-;comentario numero 2 programación!
-;comentario numero 3
-tres   sWi
-   END
+	ORG  $AB
+Et1   SWI
+	ADCA w123
+		BRA   Et1
+  End

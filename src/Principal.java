@@ -7,13 +7,15 @@ import com.ManejaArchivo;
 public class Principal {
 
 	public static Vector<LineaASM> lineasASM;
+	public static Vector<String> resTabop;
 	
 	static {
 		lineasASM=new Vector<LineaASM>();
+		resTabop= new Vector<String>();
 	}
 	
 	public static void main(String[] args) {
-		lineasASM=AnalizadorLineas.procesaLineas(ManejaArchivo.leeArchivo("prueba.txt"));
+		lineasASM=AnalizadorLineas.procesaLineas(ManejaArchivo.leeASM("prueba.txt"));
 		
 		for(LineaASM tmp:lineasASM)
 			System.out.println(tmp);

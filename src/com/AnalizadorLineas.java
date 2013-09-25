@@ -7,6 +7,12 @@ import javax.swing.JOptionPane;
 public class AnalizadorLineas {
 	
 	public static boolean despuesEnd=false,huboEnd=false;
+	public static Vector<ResultadoTabop> tabop;//=new Vector<ResultadoTabop>();
+	
+	static {
+		tabop=new Vector<ResultadoTabop>();
+		ManejaArchivo.leeTABOP("Tabop.txt", tabop);
+	}
 	
 	public static Vector<LineaASM> procesaLineas(Vector<String> lineas){
 		Vector<LineaASM> resultado=new Vector<LineaASM>();
@@ -20,6 +26,8 @@ public class AnalizadorLineas {
 				resultado.add(analizaLinea(tempLinea));
 			if(resultado.lastElement()==null) 
 				resultado.remove(resultado.size()-1);
+			else
+				checaResultado(resultado.elementAt(resultado.size()-1));
 		}
 		//System.out.println("Lineas: "+lineas.size()+" - Res: "+resultado.size());
 		if(despuesEnd)
@@ -28,8 +36,6 @@ public class AnalizadorLineas {
 		LineaASM aux= new LineaASM();
 		aux.setInstruccion("END");
 		resultado.add(aux);
-
-
 		return resultado;
 	}
 
@@ -92,12 +98,30 @@ public class AnalizadorLineas {
 	}
 
 	private static void chekaEtiqueta(String etiqueta, LineaASM aux) {
-		
 		if(etiqueta.length()<=8 && etiqueta.matches("^[a-zA-Z]+([0-9]*[_]*[a-zA-Z]*)*"))
 			aux.setEtiqueta(etiqueta);
 		else
-			aux.setProblema("Etiqueta Invalida "+etiqueta+"; ");
-		
+			aux.setProblema("Etiqueta Invalida "+etiqueta+"; ");	
+	}
+	
+	private static void checaResultado(LineaASM elementAt) {
+		try {
+			for(ResultadoTabop resAux:tabop) {
+				if(elementAt instanceof Comentario)
+					return;
+				if(elementAt.getInstruccion().equalsIgnoreCase(resAux.getInstrucc())) {
+					if(elementAt.getOperando().length()>0 && resAux.isOperando()) {
+						elementAt.setResult(resAux.toString());
+						elementAt.setProblema("");
+					}else if(!elementAt.getProblema().contains("Error con el operando, Acepta Operando: "+resAux.isOperando()+", tiene operando: "+elementAt.getOperando()))
+						elementAt.setProblema((elementAt.getResult().length()<=0)?"Error con el operando, Acepta Operando: "+resAux.isOperando()+", tiene operando: "+elementAt.getOperando():"");
+				}else if(!elementAt.getProblema().contains("error 404 CodOP not Found"))
+					elementAt.setProblema((elementAt.getResult().length()<=0)?"error 404 CodOP not Found":"");
+			}
+		}catch(Exception e) {
+			if(e.getMessage()!=null)
+				JOptionPane.showMessageDialog(null, "Error desconocido "+e.getMessage());
+		}
 	}
 
 }
