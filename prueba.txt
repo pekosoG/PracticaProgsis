@@ -1,6 +1,6 @@
 ; comentario numero 1 =TALLER=
 	ORG  $AB
-Et1   SWI
+Et1   SWI 
 	ADCA w123
-		BRA   Et1
+		BRA EE
   End

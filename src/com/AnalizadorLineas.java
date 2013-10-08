@@ -62,6 +62,7 @@ public class AnalizadorLineas {
 				chekaEtiqueta(tokens[0],aux);
 				try {
 					chekaCodOp(tokens[1],aux);
+					aux.setOperando("");
 					if(tokens.length>2)
 						aux.setOperando(tokens[2]);
 					if(tokens.length>=4)
@@ -74,6 +75,7 @@ public class AnalizadorLineas {
 				tempLinea=tempLinea.trim();
 				tokens=tempLinea.split("\\s+");				
 				chekaCodOp(tokens[0],aux);
+				aux.setOperando("");
 				if(tokens.length>1)
 					aux.setOperando(tokens[1]);
 				if(tokens.length>=3)
@@ -110,18 +112,35 @@ public class AnalizadorLineas {
 				if(elementAt instanceof Comentario)
 					return;
 				if(elementAt.getInstruccion().equalsIgnoreCase(resAux.getInstrucc())) {
-					if(elementAt.getOperando().length()>0 && resAux.isOperando()) {
-						elementAt.setResult(resAux.toString());
+					if((resAux.isOperando() && elementAt.getOperando().length()>0) || (!resAux.isOperando() && elementAt.getOperando().length()<=0)){
+						if(idenDir(elementAt,resAux)) { //aqui llamamos la rutina para ver que onda...
+							//elementAt.setResult(resAux.toString());
+							elementAt.setProblema("");
+							return;
+						}
+						if(elementAt.getProblema().length()<=0)
+							elementAt.setProblema("Error! No sirve tu linea feaaaaaa");
+					}else {
 						elementAt.setProblema("");
-					}else if(!elementAt.getProblema().contains("Error con el operando, Acepta Operando: "+resAux.isOperando()+", tiene operando: "+elementAt.getOperando()))
-						elementAt.setProblema((elementAt.getResult().length()<=0)?"Error con el operando, Acepta Operando: "+resAux.isOperando()+", tiene operando: "+elementAt.getOperando():"");
-				}else if(!elementAt.getProblema().contains("error 404 CodOP not Found"))
+						elementAt.setProblema((elementAt.getResult().length()<=0)?"Error con el operando, Acepta Operando: "+resAux.isOperando()+", tiene operando: "+((elementAt.getOperando().length()>0)?elementAt.getOperando():"No"):"");
+					}
+				}else if(!elementAt.getProblema().contains("error 404 CodOP not Found") && elementAt.getProblema().length()<=0)
 					elementAt.setProblema((elementAt.getResult().length()<=0)?"error 404 CodOP not Found":"");
 			}
 		}catch(Exception e) {
 			if(e.getMessage()!=null)
 				JOptionPane.showMessageDialog(null, "Error desconocido "+e.getMessage());
 		}
+	}
+
+	//Aqui es donde vamos a ver si la linea ASM concuerda con el leido del Tabop...
+	private static boolean idenDir(LineaASM elementAt, ResultadoTabop resAux) {
+		boolean result=false;
+		//Vamos a comparar los Operandos a ver si es cierto... vas a tener que programar un REGEX o algo
+		//para cada tipo de direccionamiento... ¿será la mejor idea?
+		
+		
+		return result;
 	}
 
 }
