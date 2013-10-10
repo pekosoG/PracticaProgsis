@@ -1,0 +1,11 @@
+Modos de Direccionamiento
+
+Inherente -> Sin Operando
+Inmediato -> [#]%$@#\\d* -> 8bits 0 a 255, 16bits 256 a 65535
+Directo   -> [#%$@]*\\d* -> 0 a 255
+Extendido -> [#%$@]*\\d* -> 256 a 65535 or Etiqueta
+Indzdo 5b -> \\d*\,[XY]?(SP)?(PC)? -> -16 a 15 ; \d*\,[XxYy]?|([sS][pP])|([pP][cC]) ??
+Indzdo 9b -> \\d\,[XY]?(SP)?(PC)? -> -256 a -17 ^ 16 a 255
+Indzdo 16b-> \\d\,[XY]?(SP)?(PC)? -> 256 a 65535
+Indzdo Indir 16b -> \[\\d,[XY(SP)(PC)\] -> 0 a 65535
+Indzdo Pre-Post  -> \\d,([-+][XY(SP)(PC)])([XY(SP)(PC)][-+])
