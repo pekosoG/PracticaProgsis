@@ -19,7 +19,7 @@ public class Principal {
 		
 		for(LineaASM tmp:lineasASM) 
 			System.out.println(tmp);
-		ManejaArchivo.escribeLTS(lineasASM,"prueba.lts");
+		ManejaArchivo.escribeLTS(lineasASM,"prueba.lst");
 	}
 
 }

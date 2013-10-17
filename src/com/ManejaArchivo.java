@@ -72,7 +72,7 @@ public class ManejaArchivo {
 					linea=codMaq+"\t"+et+"\t"+inst+"\t"+op+"\t"+dir+"\t"+bytes;
 				}catch(Exception ee) {
 					//ee.printStackTrace();
-					linea=aux.getProblema();
+					linea=aux.getInstruccion()+"\t"+aux.getProblema();
 				}
 				pw.println(linea);	
 			}

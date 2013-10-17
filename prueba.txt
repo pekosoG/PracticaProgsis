@@ -1,13 +1,13 @@
   ABA 
    ADCA 15 
-		START error
+		START erww
     ADDD #%10 
 	ADDD  @11
  ADDD #$10 
 		BSZ 3
 	FILL 2,4
 	FCC  /HOLA/ 
-	ORG $4,100 Error
+	ORG $4,100 
 		ASL 15
 	 ASR $100 
   BCS #30
