@@ -6,7 +6,7 @@ public class LineaASM {
 	private String instruccion=null;
 	private String operando=null;
 	private String problema="";
-	//private ResultadoTabop result=null;
+	private ResultadoTabop resultTabop=null;
 	private String result="";
 	
 	
@@ -64,12 +64,19 @@ public class LineaASM {
 	public void setResult(String result) {
 		this.result += result;
 	}
+	
+	public void setResTabop(ResultadoTabop res) {
+		this.resultTabop=res;
+	}
+	public ResultadoTabop getResTabop() {
+		return this.resultTabop;
+	}
 
 	public String toString() {
 		if(problema.length()>0)
 			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+" "+" Problema: "+this.problema+"\n---";
 		else if(result.length()>0)
-			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+"\nTabop: "+result+"---";
+			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+"\nTabop "+result+":\n\t "+resultTabop+"---";
 		else
 			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+"\n---";
 	}

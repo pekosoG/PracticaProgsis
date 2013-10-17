@@ -1,8 +1,12 @@
 package com;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -44,6 +48,40 @@ public class ManejaArchivo {
 			
 		}catch(IOException ee) {
 			JOptionPane.showMessageDialog(null, "Error al abrir el Arhivo "+NombreArchivo);
+		}
+	}
+
+	public static void escribeLTS(Vector<LineaASM> lineasASM,String archivo) {
+		try {
+			File file=new File(archivo);
+			FileWriter fw = new FileWriter(file,true);
+			BufferedWriter bw= new BufferedWriter(fw);
+			PrintWriter pw= new PrintWriter(bw);
+
+			for(LineaASM aux:lineasASM) {
+				String linea="";
+
+				try {
+					ResultadoTabop resAux=aux.getResTabop();
+					String codMaq=""+resAux.getCodmaquina(),
+							et=""+aux.getEtiqueta(),
+							inst=""+aux.getInstruccion(),
+							op=""+aux.getOperando(),
+							dir=""+resAux.getDireccionamiento(),
+							bytes=""+resAux.getTotalBytes();
+					linea=codMaq+"\t"+et+"\t"+inst+"\t"+op+"\t"+dir+"\t"+bytes;
+				}catch(Exception ee) {
+					//ee.printStackTrace();
+					linea=aux.getProblema();
+				}
+				pw.println(linea);	
+			}
+			pw.close();
+			fw.close();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

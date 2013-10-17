@@ -53,7 +53,7 @@ public class ResultadoTabop {
 	}
 
 	public String toString() {
-		return "CodMaq: "+codmaquina+"   Op: "+operando+" Tipo: "+direccionamiento+"B-Calcs: "+bytesCalculados+" B-X-Calc: "+bytesPorCalcular+" Total: "+totalBytes+"\n";
+		return "CodMaq: "+codmaquina+"   Op: "+operando+" Tipo: "+direccionamiento+" B-Calcs: "+bytesCalculados+" B-X-Calc: "+bytesPorCalcular+" Total: "+totalBytes+"\n";
 	}
 	
 }

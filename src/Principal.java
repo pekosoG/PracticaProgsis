@@ -17,8 +17,9 @@ public class Principal {
 	public static void main(String[] args) {
 		lineasASM=AnalizadorLineas.procesaLineas(ManejaArchivo.leeASM("prueba.txt"));
 		
-		for(LineaASM tmp:lineasASM)
+		for(LineaASM tmp:lineasASM) 
 			System.out.println(tmp);
+		ManejaArchivo.escribeLTS(lineasASM,"prueba.lts");
 	}
 
 }

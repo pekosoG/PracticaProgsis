@@ -1,6 +1,14 @@
-; comentario numero 1 =TALLER=
-	ORG  $AB
-Et1   SWI 
-	ADCA w123
-		BRA EE
-  End
+  ABA 
+   ADCA 15 
+		START error
+    ADDD #%10 
+	ADDD  @11
+ ADDD #$10 
+		BSZ 3
+	FILL 2,4
+	FCC  /HOLA/ 
+	ORG $4,100 Error
+		ASL 15
+	 ASR $100 
+  BCS #30
+  END

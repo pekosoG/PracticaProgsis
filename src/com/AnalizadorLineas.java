@@ -6,12 +6,59 @@ import javax.swing.JOptionPane;
 
 public class AnalizadorLineas {
 	
+	private static String REGEX_Etiqueta="^[a-zA-Z]+([0-9]*[_]*[a-zA-Z]*)*";
+	private static String REGEX_CodOP="^[a-zA-Z]+(([0-9]*[a-zA-Z]*)*[\\.]?([0-9]*[a-zA-Z]*)*)";
+	private static String REGEX_Inmediato="[#][%$@#]*\\d*";
+	private static String REGEX_Directo="[#%$@]*\\d*";
+	private static String REGEX_Extendido=REGEX_Directo;
+	private static String REGEX_xysp="([XxYy]|([sS][pP])|([pP][cC]))";
+	private static String REGEX_Indizado="\\d*,"+REGEX_xysp+"$";
+	private static String REGEX_Indizado_Indirecto="\\[\\d*,"+REGEX_xysp+"\\]";
+	private static String REGEX_Indizado_PrePost="\\d*,(([-+]"+REGEX_xysp+")|("+REGEX_xysp+"[-+]))";
+	private static String REGEX_Indizado_Acumulador="[AaBbDd],"+REGEX_xysp+"$";
+	private static String REGEX_Indizado_Acumulador_Indirecto="\\[[AaBbDd],"+REGEX_xysp+"\\]$";
+	private static String REGEX_Relativo="[^\\d*][a-zA-Z]+([0-9]*[_]*[a-zA-Z]*)*";
+		
 	public static boolean despuesEnd=false,huboEnd=false;
-	public static Vector<ResultadoTabop> tabop;//=new Vector<ResultadoTabop>();
+	public static Vector<ResultadoTabop> tabop;
+	public static Vector<Compara_inst> spects_ins;
+	
 	
 	static {
+		//Leemos el Tabop y lo cargamos en memoria
 		tabop=new Vector<ResultadoTabop>();
 		ManejaArchivo.leeTABOP("Tabop.txt", tabop);
+		
+		//Cargamos cada tipo de direccionamiento y sus caracteristica...
+		spects_ins=new Vector<Compara_inst>();
+		
+		spects_ins.add(new Compara_inst("INH",".",0,0,"Inherente"));
+		
+		spects_ins.add(new Compara_inst("IMM",REGEX_Inmediato,0,255,"Inmediato 8b"));
+		
+		spects_ins.add(new Compara_inst("IMM",REGEX_Inmediato,256,65535,"Inmediato 16b"));
+		
+		spects_ins.add(new Compara_inst("DIR",REGEX_Directo,0,255,"Directo"));
+		
+		spects_ins.add(new Compara_inst("EXT","("+REGEX_Etiqueta+")|("+REGEX_Extendido+")",0,65535,"Extendido"));
+		
+		spects_ins.add(new Compara_inst("IDX",REGEX_Indizado,-16,15,"Indizado 5b"));
+		
+		spects_ins.add(new Compara_inst("IDX1",REGEX_Indizado,-256,-17,"Indizado 9b"));
+		
+		spects_ins.add(new Compara_inst("IDX1",REGEX_Indizado,16,255,"Indizado 9b"));
+		
+		spects_ins.add(new Compara_inst("IDX2",REGEX_Indizado_Indirecto,256,65535,"Indizado 16b"));
+
+		spects_ins.add(new Compara_inst("IDX",REGEX_Indizado_PrePost,1,8,"Indizado Pre-Post Decremento"));
+		
+		spects_ins.add(new Compara_inst("IDX",REGEX_Indizado_Acumulador,0,0,"Indizado Acumulador"));
+		
+		spects_ins.add(new Compara_inst("[D,IDX]",REGEX_Indizado_Acumulador_Indirecto,0,0,"Indizado Acumulador Indirecto"));
+
+		spects_ins.add(new Compara_inst("REL",REGEX_Relativo,0,255,"Relativo 8b"));
+		
+		spects_ins.add(new Compara_inst("REL","("+REGEX_Etiqueta+")|("+REGEX_Relativo+")",255,65535,"Relativo 8b"));
 	}
 	
 	public static Vector<LineaASM> procesaLineas(Vector<String> lineas){
@@ -93,14 +140,14 @@ public class AnalizadorLineas {
 	}
 
 	private static void chekaCodOp(String codOp, LineaASM aux) {
-		if(codOp.length()<=5 && codOp.matches("^[a-zA-Z]+(([0-9]*[a-zA-Z]*)*[\\.]?([0-9]*[a-zA-Z]*)*)"))
+		if(codOp.length()<=5 && codOp.matches(REGEX_CodOP))
 			aux.setInstruccion(codOp);
 		else
 			aux.setProblema("CodOp Invalido: "+codOp+"; ");
 	}
 
 	private static void chekaEtiqueta(String etiqueta, LineaASM aux) {
-		if(etiqueta.length()<=8 && etiqueta.matches("^[a-zA-Z]+([0-9]*[_]*[a-zA-Z]*)*"))
+		if(etiqueta.length()<=8 && etiqueta.matches(REGEX_Etiqueta))
 			aux.setEtiqueta(etiqueta);
 		else
 			aux.setProblema("Etiqueta Invalida "+etiqueta+"; ");	
@@ -136,10 +183,75 @@ public class AnalizadorLineas {
 	//Aqui es donde vamos a ver si la linea ASM concuerda con el leido del Tabop...
 	private static boolean idenDir(LineaASM elementAt, ResultadoTabop resAux) {
 		boolean result=false;
-		//Vamos a comparar los Operandos a ver si es cierto... vas a tener que programar un REGEX o algo
-		//para cada tipo de direccionamiento... ¿será la mejor idea?
 		
+		for(Compara_inst comp_aux: spects_ins) {
+			if(resAux.getDireccionamiento().equalsIgnoreCase(comp_aux.Identificador)) {
+				try{
+					String valor_String=(elementAt.getOperando().replace("[^\\d*#$%@]*"," ")).trim();
+					if(valor_String.length()>0 && resAux.isOperando()) {
+						if(!valor_String.matches(REGEX_Etiqueta)) {
+							int valorElement=obtieneValor(valor_String);
+							if(valorElement>=comp_aux.min&&valorElement<=comp_aux.max) {
+								if(elementAt.getOperando().matches(comp_aux.REGEX)) {
+									result=true;
+									elementAt.setResult(comp_aux.Descrip);
+									elementAt.setResTabop(resAux);
+									break;
+								}
+							}
+						}else {
+							if(elementAt.getOperando().matches(comp_aux.REGEX)) {
+								result=true;
+								elementAt.setResult(comp_aux.Descrip);
+								elementAt.setResTabop(resAux);
+								break;
+							}
+						}
+					}
+					else {
+						result=true;
+						elementAt.setResult(comp_aux.Descrip);
+						elementAt.setResTabop(resAux);
+						break;
+					}						
+				}catch(Exception e) {
+					System.out.println("Error en idenDir "+e);
+				}
+			}
+		}
 		
+		return result;
+	}
+
+	private static int obtieneValor(String valor_String) {
+		int result=0;
+		String aux;
+		char ini=valor_String.charAt(0);
+		char sec=valor_String.charAt(1);
+		
+		if(ini=='#'|ini=='$'|ini=='%'|ini=='@') {
+			aux=valor_String.substring(1);
+			if(sec=='#'|sec=='$'|sec=='%'|sec=='@') {
+				result=obtieneValor(valor_String.substring(1));
+				aux=Integer.toString(result);
+			}
+			switch(ini) {
+			case '$':
+				result=Integer.valueOf(aux,16);
+				break;
+			case '@':
+				result=Integer.valueOf(aux,8);
+				break;
+			case '%':
+				result=Integer.valueOf(aux,2);
+				break;
+			case '#':
+				result=Integer.valueOf(aux,10);
+				break;
+			}
+		}
+		else
+			result=Integer.valueOf(valor_String,10);		
 		return result;
 	}
 
