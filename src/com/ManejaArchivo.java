@@ -54,10 +54,12 @@ public class ManejaArchivo {
 	public static void escribeLTS(Vector<LineaASM> lineasASM,String archivo) {
 		try {
 			File file=new File(archivo);
-			FileWriter fw = new FileWriter(file,true);
+			FileWriter fw = new FileWriter(file);
 			BufferedWriter bw= new BufferedWriter(fw);
 			PrintWriter pw= new PrintWriter(bw);
 
+			pw.println("CodMaq\tEtiq\tInst\tOper\tDire\tByes");
+			
 			for(LineaASM aux:lineasASM) {
 				String linea="";
 
@@ -72,7 +74,7 @@ public class ManejaArchivo {
 					linea=codMaq+"\t"+et+"\t"+inst+"\t"+op+"\t"+dir+"\t"+bytes;
 				}catch(Exception ee) {
 					//ee.printStackTrace();
-					linea=aux.getInstruccion()+"\t"+aux.getProblema();
+					linea="\t\t"+aux.getInstruccion()+"\t"+aux.getProblema();
 				}
 				pw.println(linea);	
 			}

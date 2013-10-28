@@ -1,14 +1,4 @@
-  ABA 
-   ADCA 15 
-		START erww
-    ADDD #%10 
-	ADDD  @11
- ADDD #$10 
-		BSZ 3
-	FILL 2,4
-	FCC  /HOLA/ 
-	ORG $4,100 
-		ASL 15
-	 ASR $100 
-  BCS #30
-  END
+  ORG 555
+  ADCA 512,X 
+     ADCA 1,+PC
+     END

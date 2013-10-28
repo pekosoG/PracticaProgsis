@@ -1,5 +1,7 @@
 package com;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -31,8 +33,8 @@ public class AnalizadorLineas {
 		
 		//Cargamos cada tipo de direccionamiento y sus caracteristica...
 		spects_ins=new Vector<Compara_inst>();
-		
-		spects_ins.add(new Compara_inst("INH",".",0,0,"Inherente"));
+
+		spects_ins.add(new Compara_inst("INH",".",0,0,"Inherente"));		
 		
 		spects_ins.add(new Compara_inst("IMM",REGEX_Inmediato,0,255,"Inmediato 8b"));
 		
@@ -48,7 +50,9 @@ public class AnalizadorLineas {
 		
 		spects_ins.add(new Compara_inst("IDX1",REGEX_Indizado,16,255,"Indizado 9b"));
 		
-		spects_ins.add(new Compara_inst("IDX2",REGEX_Indizado_Indirecto,256,65535,"Indizado 16b"));
+		spects_ins.add(new Compara_inst("IDX2",REGEX_Indizado,256,65535,"Indizado 16b"));
+		
+		spects_ins.add(new Compara_inst("[IDX2]",REGEX_Indizado_Indirecto,0,65535,"Indizado 16b"));
 
 		spects_ins.add(new Compara_inst("IDX",REGEX_Indizado_PrePost,1,8,"Indizado Pre-Post Decremento"));
 		
@@ -59,6 +63,7 @@ public class AnalizadorLineas {
 		spects_ins.add(new Compara_inst("REL",REGEX_Relativo,0,255,"Relativo 8b"));
 		
 		spects_ins.add(new Compara_inst("REL","("+REGEX_Etiqueta+")|("+REGEX_Relativo+")",255,65535,"Relativo 8b"));
+		
 	}
 	
 	public static Vector<LineaASM> procesaLineas(Vector<String> lineas){
@@ -154,7 +159,9 @@ public class AnalizadorLineas {
 	}
 	
 	private static void checaResultado(LineaASM elementAt) {
+		if(!elementAt.getProblema().equalsIgnoreCase("Se encontraron mas elementos despues del operando"))
 		try {
+			//if(!esDirectiva(elementAt))
 			for(ResultadoTabop resAux:tabop) {
 				if(elementAt instanceof Comentario)
 					return;
@@ -171,7 +178,7 @@ public class AnalizadorLineas {
 						elementAt.setProblema("");
 						elementAt.setProblema((elementAt.getResult().length()<=0)?"Error con el operando, Acepta Operando: "+resAux.isOperando()+", tiene operando: "+((elementAt.getOperando().length()>0)?elementAt.getOperando():"No"):"");
 					}
-				}else if(!elementAt.getProblema().contains("error 404 CodOP not Found") && elementAt.getProblema().length()<=0)
+				}else if(!elementAt.getProblema().contains("Error! 404 CodOP not Found") && elementAt.getProblema().length()<=0)
 					elementAt.setProblema((elementAt.getResult().length()<=0)?"error 404 CodOP not Found":"");
 			}
 		}catch(Exception e) {
@@ -190,22 +197,36 @@ public class AnalizadorLineas {
 					String valor_String=(elementAt.getOperando().replace("[^\\d*#$%@]*"," ")).trim();
 					if(valor_String.length()>0 && resAux.isOperando()) {
 						if(!valor_String.matches(REGEX_Etiqueta)) {
-							int valorElement=obtieneValor(valor_String);
-							if(valorElement>=comp_aux.min&&valorElement<=comp_aux.max) {
-								if(elementAt.getOperando().matches(comp_aux.REGEX)) {
-									result=true;
-									elementAt.setResult(comp_aux.Descrip);
-									elementAt.setResTabop(resAux);
-									break;
-								}
+							try {
+								int valorElement=obtieneValor(valor_String);
+								if(valorElement>=comp_aux.min&&valorElement<=comp_aux.max) {
+									if(elementAt.getOperando().matches(comp_aux.REGEX)) {
+										result=true;
+										elementAt.setResult(comp_aux.Descrip);
+										elementAt.setResTabop(resAux);
+										break;
+									}
+								}else {elementAt.setProblema("");elementAt.setProblema("Error! Operando Invalido");}
+							}catch(NumberFormatException NFE) {
+								String aux[]=valor_String.split(",");
+								int valorElement=obtieneValor(aux[0]);
+								if(valorElement>=comp_aux.min&&valorElement<=comp_aux.max) {
+									if(elementAt.getOperando().matches(comp_aux.REGEX)) {
+										result=true;
+										elementAt.setResult(comp_aux.Descrip);
+										elementAt.setResTabop(resAux);
+										break;
+									}
+								}else { elementAt.setProblema("");elementAt.setProblema("Error! Operando Invalido");}
 							}
-						}else {
+						}else{
+
 							if(elementAt.getOperando().matches(comp_aux.REGEX)) {
 								result=true;
 								elementAt.setResult(comp_aux.Descrip);
 								elementAt.setResTabop(resAux);
 								break;
-							}
+							}else {elementAt.setProblema(""); elementAt.setProblema("Error! Operando Invalido");}
 						}
 					}
 					else {
@@ -215,7 +236,10 @@ public class AnalizadorLineas {
 						break;
 					}						
 				}catch(Exception e) {
-					System.out.println("Error en idenDir "+e);
+					//System.out.println("Error en idenDir "+e);
+					elementAt.setProblema("");
+					elementAt.setProblema("Operando Invalido, "+e);
+					return false;
 				}
 			}
 		}
@@ -227,7 +251,12 @@ public class AnalizadorLineas {
 		int result=0;
 		String aux;
 		char ini=valor_String.charAt(0);
-		char sec=valor_String.charAt(1);
+		char sec='_';
+		try {
+		sec=valor_String.charAt(1);
+		}catch(java.lang.StringIndexOutOfBoundsException ee) {
+			//ee.printStackTrace();
+		}
 		
 		if(ini=='#'|ini=='$'|ini=='%'|ini=='@') {
 			aux=valor_String.substring(1);
@@ -255,4 +284,48 @@ public class AnalizadorLineas {
 		return result;
 	}
 
+	private static boolean esDirectiva(LineaASM elementAt) {
+		boolean result=false;
+		String inst=elementAt.getInstruccion();
+		int op=-1;
+		try {
+			op=obtieneValor(elementAt.getOperando());
+		}catch(Exception ee) {
+			ee.getStackTrace();
+		}
+		//Directiva de constante
+		if((inst.equalsIgnoreCase("DB")||inst.equalsIgnoreCase("DC.B")||inst.equalsIgnoreCase("FBC")&&(op>=0&&op<=255))) {
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva de Constante",1));
+			result=true;}
+		if((inst.equalsIgnoreCase("DW")||inst.equalsIgnoreCase("DC.w")||inst.equalsIgnoreCase("FDB")&&(op>=0&&op<=65535))) {
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva de Constante",2));
+			result=true;}
+		if(inst.equalsIgnoreCase("FCC")&&elementAt.getOperando().length()>0) {
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva de Constante",elementAt.getOperando().length()-2));
+			result=true;}
+		
+		//Directivas de Reserva de Memoria
+		if((inst.equalsIgnoreCase("DS")||inst.equalsIgnoreCase("DS.B")||inst.equalsIgnoreCase("RMB")&&(op>=0&&op<=65535))){
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva de Reserva MMRY",op));
+			result=true;}
+		if((inst.equalsIgnoreCase("DS.W")||inst.equalsIgnoreCase("RMW"))&&(op>=0&&op<=65535)) {
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva de Reserva MMRY",op*2));
+			result=true;
+		}
+		
+		//Directiva EQU
+		if(inst.equalsIgnoreCase("EQU")&&elementAt.getEtiqueta().length()>0&&(op>=0&&op<=65535)) {
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva EQU",op));
+			result=true;
+		}
+		//Directiva ORG
+		if(inst.equalsIgnoreCase("ORG")&&(op>=0&&op<=65535)) {
+			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva ORG",op));
+			elementAt.setProblema("");
+			result=true;
+			
+		}
+		
+		return result;
+	}
 }

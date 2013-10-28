@@ -2,9 +2,9 @@ package com;
 
 public class LineaASM {
 	
-	private String etiqueta=null;
-	private String instruccion=null;
-	private String operando=null;
+	private String etiqueta="";
+	private String instruccion="";
+	private String operando="";
 	private String problema="";
 	private ResultadoTabop resultTabop=null;
 	private String result="";

@@ -1,15 +1,18 @@
 package com;
 
+import java.io.FileNotFoundException;
+import java.util.Formatter;
+
 public class ResultadoTabop {
 	
 	/****inst-tiene_Operador-direcc-codmaq-bytesCalculados-bytesPorCalcular-total*/
 	
-	private String instrucc=null;
+	private String instrucc="";
 	private boolean operando=false;
-	private String direccionamiento=null;
-	private String codmaquina=null;
-	private String bytesCalculados=null;
-	private String bytesPorCalcular=null;
+	private String direccionamiento="";
+	private String codmaquina="";
+	private String bytesCalculados="";
+	private String bytesPorCalcular="";
 	private int totalBytes=0;	
 	
 	public ResultadoTabop(String instrucc, boolean operando,
@@ -22,6 +25,14 @@ public class ResultadoTabop {
 		this.bytesCalculados = bytesCalculados;
 		this.bytesPorCalcular = bytesPorCalcular;
 		this.totalBytes = totalBytes;
+	}
+	
+	public ResultadoTabop(String instrucc,String direcc,int totalBytes) {
+		this.instrucc=instrucc;
+		this.direccionamiento=direcc;
+		this.totalBytes=totalBytes;
+		if(!direcc.contains("ORG"))
+			this.codmaquina+=new Formatter().format("%04x",totalBytes);
 	}
 	
 	public String getInstrucc() {

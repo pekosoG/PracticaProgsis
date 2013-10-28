@@ -1,0 +1,5 @@
+CodMaq	Etiq	Inst	Oper	Dire	Byes
+		ORG	error 404 CodOP not Found
+A9 xb ee ff		ADCA	512,X	IDX2	6
+A9 xb		ADCA	1,+PC	IDX	3
+		END	
