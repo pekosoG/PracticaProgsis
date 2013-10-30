@@ -57,26 +57,33 @@ public class ManejaArchivo {
 			FileWriter fw = new FileWriter(file);
 			BufferedWriter bw= new BufferedWriter(fw);
 			PrintWriter pw= new PrintWriter(bw);
+			boolean error=false;
 
-			pw.println("CodMaq\tEtiq\tInst\tOper\tDire\tByes");
+			pw.println("Conloc\tCodMaq\tEtiq\tInst\tOper\tDire\tByes");
 			
 			for(LineaASM aux:lineasASM) {
 				String linea="";
 
 				try {
+					if(aux.getProblema().length()>0)
+						throw new Exception();
 					ResultadoTabop resAux=aux.getResTabop();
-					String codMaq=""+resAux.getCodmaquina(),
+					String conloc=""+aux.getConloc(),
+							codMaq=""+resAux.getCodmaquina(),
 							et=""+aux.getEtiqueta(),
 							inst=""+aux.getInstruccion(),
 							op=""+aux.getOperando(),
 							dir=""+resAux.getDireccionamiento(),
-							bytes=""+resAux.getTotalBytes();
-					linea=codMaq+"\t"+et+"\t"+inst+"\t"+op+"\t"+dir+"\t"+bytes;
+							bytes=""+resAux.getBytesCalculados();
+					linea=conloc+"\t"+codMaq+"\t"+et+"\t"+inst+"\t"+op+"\t"+dir+"\t"+bytes;
 				}catch(Exception ee) {
 					//ee.printStackTrace();
 					linea="\t\t"+aux.getInstruccion()+"\t"+aux.getProblema();
+					error=true;
 				}
 				pw.println(linea);	
+				if(error)
+					break;
 			}
 			pw.close();
 			fw.close();
@@ -87,4 +94,21 @@ public class ManejaArchivo {
 		}
 	}
 
+	public static void escribeTabsim(Vector<String> valores,String archivo) {
+		try {
+			File file=new File(archivo);
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw= new BufferedWriter(fw);
+			PrintWriter pw= new PrintWriter(bw);
+			
+			for(String aux:valores) 
+				pw.println(aux);
+			
+			pw.close();
+			fw.close();
+			
+		}catch(IOException ee) {
+			ee.printStackTrace();
+		}
+	}
 }

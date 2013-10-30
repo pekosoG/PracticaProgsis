@@ -1,7 +1,6 @@
 package com;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Formatter;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -21,12 +20,16 @@ public class AnalizadorLineas {
 	private static String REGEX_Indizado_Acumulador_Indirecto="\\[[AaBbDd],"+REGEX_xysp+"\\]$";
 	private static String REGEX_Relativo="[^\\d*][a-zA-Z]+([0-9]*[_]*[a-zA-Z]*)*";
 		
-	public static boolean despuesEnd=false,huboEnd=false;
+	public static boolean despuesEnd=false,huboEnd=false,huboORG=false;
 	public static Vector<ResultadoTabop> tabop;
 	public static Vector<Compara_inst> spects_ins;
+	public static Vector<String> palTabsim;
+	
+	public static int elContloc=0;
 	
 	
 	static {
+		palTabsim=new Vector<String>();
 		//Leemos el Tabop y lo cargamos en memoria
 		tabop=new Vector<ResultadoTabop>();
 		ManejaArchivo.leeTABOP("Tabop.txt", tabop);
@@ -88,6 +91,8 @@ public class AnalizadorLineas {
 		LineaASM aux= new LineaASM();
 		aux.setInstruccion("END");
 		resultado.add(aux);
+		ManejaArchivo.escribeTabsim(palTabsim,"TabSim.txt");
+		
 		return resultado;
 	}
 
@@ -161,7 +166,7 @@ public class AnalizadorLineas {
 	private static void checaResultado(LineaASM elementAt) {
 		if(!elementAt.getProblema().equalsIgnoreCase("Se encontraron mas elementos despues del operando"))
 		try {
-			//if(!esDirectiva(elementAt))
+			if(!esDirectiva(elementAt))
 			for(ResultadoTabop resAux:tabop) {
 				if(elementAt instanceof Comentario)
 					return;
@@ -169,6 +174,8 @@ public class AnalizadorLineas {
 					if((resAux.isOperando() && elementAt.getOperando().length()>0) || (!resAux.isOperando() && elementAt.getOperando().length()<=0)){
 						if(idenDir(elementAt,resAux)) { //aqui llamamos la rutina para ver que onda...
 							//elementAt.setResult(resAux.toString());
+							calculaConLoc(elementAt);
+							identificaTabsim(elementAt);
 							elementAt.setProblema("");
 							return;
 						}
@@ -184,6 +191,35 @@ public class AnalizadorLineas {
 		}catch(Exception e) {
 			if(e.getMessage()!=null)
 				JOptionPane.showMessageDialog(null, "Error desconocido "+e.getMessage());
+		}
+	}
+
+	private static void identificaTabsim(LineaASM elementAt) {
+		boolean error=false;
+		if(elementAt.getEtiqueta().length()>0) {
+			for(String ee:palTabsim) {
+				String a[]=ee.split("\\s");
+				ee=a[0];
+				if(ee.equals(elementAt.getEtiqueta()))
+					error=true;
+			}
+			if(!error) {
+				String aux=elementAt.getEtiqueta();
+				aux+="\t"+elementAt.getConloc();
+				palTabsim.add(aux);
+			}else
+				elementAt.setProblema("Etiqueta Duplicada!!");
+		}
+	}
+
+	private static void calculaConLoc(LineaASM elementAt) {
+		int Contaux=0;
+		try {
+			elementAt.setConloc(new Formatter().format("%04x", elContloc).toString().toUpperCase());
+			Contaux=Integer.valueOf(elementAt.getResTabop().getBytesCalculados(),10);
+			elContloc+=Contaux;
+		}catch(Exception ee) {
+			ee.printStackTrace();
 		}
 	}
 
@@ -316,15 +352,25 @@ public class AnalizadorLineas {
 		//Directiva EQU
 		if(inst.equalsIgnoreCase("EQU")&&elementAt.getEtiqueta().length()>0&&(op>=0&&op<=65535)) {
 			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva EQU",op));
+			elementAt.setConloc(new Formatter().format("%04x", op).toString().toUpperCase());
 			result=true;
 		}
 		//Directiva ORG
-		if(inst.equalsIgnoreCase("ORG")&&(op>=0&&op<=65535)) {
+		if(inst.equalsIgnoreCase("ORG")&&(op>=0&&op<=65535)&&!huboORG) {
 			elementAt.setResTabop(new ResultadoTabop(inst,"Directiva ORG",op));
+			elementAt.setConloc(new Formatter().format("%04x", elContloc).toString().toUpperCase());
+			elContloc=op;
+			huboORG=true;
 			elementAt.setProblema("");
-			result=true;
-			
+			result=true;			
 		}
+		if(inst.equalsIgnoreCase("ORG")&&(op>=0&&op<=65535)&&huboORG) {
+			elementAt.setProblema("Solo puede existir un ORG!!");
+			result=false;
+		}
+		
+		if(result)
+			identificaTabsim(elementAt);
 		
 		return result;
 	}

@@ -8,6 +8,7 @@ public class LineaASM {
 	private String problema="";
 	private ResultadoTabop resultTabop=null;
 	private String result="";
+	private String conloc="";
 	
 	
 	public LineaASM(String etiqueta, String instruccion, String operando) {
@@ -21,6 +22,14 @@ public class LineaASM {
 	
 	public LineaASM() {
 		//Constructor vacío
+	}
+
+	public void setConloc(String conloc) {
+		this.conloc = conloc;
+	}
+	
+	public String getConloc() {
+		return this.conloc;
 	}
 
 	public String getEtiqueta() {
@@ -74,7 +83,7 @@ public class LineaASM {
 
 	public String toString() {
 		if(problema.length()>0)
-			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+" "+" Problema: "+this.problema+"\n---";
+			return "Conloc: "+this.conloc+"Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+" "+" Problema: "+this.problema+"\n---";
 		else if(result.length()>0)
 			return "Et:"+this.etiqueta+" - Inst: "+this.instruccion+" - Op: "+this.operando+"\nTabop "+result+":\n\t "+resultTabop+"---";
 		else
